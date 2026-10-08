@@ -17,3 +17,12 @@ test('preview and lightbox variants identify one photo but different albums stay
 test('empty summary has no invented ISO or flash percentage', () => {
   expect(summarize(new Map())).toMatchObject({ checked: 0, iso: null, flash: { known: 0, fired: 0, unknown: 0 } });
 });
+
+test('focal lengths use recorded millimetres and group exact values', () => {
+  const data = new Map<string, Result>([
+    ['a', {status:'ok',data:{focal:35}}], ['b', {status:'ok',data:{focal:35}}],
+    ['c', {status:'ok',data:{focal:85}}], ['d', {status:'ok',data:{focal:24.5}}],
+    ['e', {status:'ok',data:{focal:0}}], ['f', {status:'missing'}]
+  ]);
+  expect(summarize(data).focals).toEqual([{name:'35 mm',count:2},{name:'24.5 mm',count:1},{name:'85 mm',count:1}]);
+});

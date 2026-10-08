@@ -1,11 +1,14 @@
 <!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pixieset EXIF</title><link rel="stylesheet" href="popup.css"></head><body>
-<header><img src="icons/48.png" alt="" width="32" height="32"><div><h1>Pixieset EXIF</h1><span class="version">0.2.0 · fotografické údaje</span></div></header>
+<header><img src="icons/48.png" alt="" width="32" height="32"><div><h1>Pixieset EXIF</h1><span class="version">0.4.0 · fotografické údaje</span></div></header>
 <main>
+<button id="panel" class="popout" type="button">Zobraziť / skryť panel v galérii</button>
+<button id="popout" class="popout" type="button">Samostatné okno ↗</button>
 <section aria-labelledby="gallery"><h2 id="gallery">Prehľad galérie</h2><p class="muted" id="scope">Načítavam prehľad…</p>
 <div id="summary" hidden>
+<button id="section-scan" class="popout" type="button" disabled>Skontrolovať celú sekciu</button><p id="section-status" class="hint" role="status"></p>
 <div class="metrics"><div><strong id="checked">0</strong><span>Skontrolované</span></div><div><strong id="available">0</strong><span>S EXIF</span></div><div><strong id="missing">0</strong><span>Bez údajov</span></div><div><strong id="errors">0</strong><span>Chyby</span></div></div>
 <p class="hint" id="detected"></p>
-<h3>Fotoaparáty</h3><div class="groups" id="cameras"></div><h3>Objektívy</h3><div class="groups" id="lenses"></div><h3>Použité clony</h3><div class="groups" id="apertures"></div>
+<h3>Fotoaparáty</h3><div class="groups" id="cameras"></div><h3>Objektívy</h3><div class="groups" id="lenses"></div><h3>Ohniská</h3><div class="groups" id="focals"></div><h3>Použité clony</h3><div class="groups" id="apertures"></div>
 <div class="facts"><div><b id="iso"></b><p class="hint" id="iso-note"></p></div><div><b id="flash"></b><p class="hint" id="flash-note"></p></div></div>
 </div></section>
 <section id="controls" aria-label="Nastavenia zobrazenia"><label class="switch"><span>Zobrazovať údaje</span><input id="enabled" type="checkbox"></label><p class="hint" id="status" role="status">Načítavam nastavenia…</p>

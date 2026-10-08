@@ -1,6 +1,9 @@
 import { flashLabel, lines, type Result } from './model';
 import { DEFAULTS, settingsFrom, type Settings } from './settings';
 import { photoKey, summarize, type Summary } from './stats';
+import { createPanel } from './panel';
+import { SectionScan, sectionConfig, listSection } from './section';
+const panel = createPanel(() => toggleSection());
 type Entry = { image: HTMLImageElement; url: string; host: HTMLElement; label: HTMLElement; done: boolean; result?: Result };
 const entries = new Map<HTMLImageElement, Entry>();
 const queue = new Set<Entry>();
@@ -11,6 +14,23 @@ let revision = 0;
 let scope = location.pathname;
 let pointer = { x: -1, y: -1 };
 const results = new Map<string, Result>();
+const sectionScan = new SectionScan({ list: listSection, read: readSectionPhoto, known: url => results.get(photoKey(url)), record: recordSectionPhoto, changed: () => { updatePanel(); pump(); } });
+function toggleSection() {
+  syncScope();
+  if (sectionScan.running) { sectionScan.stop(); return; }
+  const config = sectionConfig(document, location.href);
+  if (enabled && config) sectionScan.start(config);
+}
+async function readSectionPhoto(url: string, signal: AbortSignal): Promise<Result> {
+  while (active >= 2) { signal.throwIfAborted(); await new Promise(resolve => setTimeout(resolve, 50)); }
+  signal.throwIfAborted(); active++;
+  try { return await readEntry(url); } catch (error) { if (error instanceof Error && /context invalidated/i.test(error.message)) stop(); throw error; } finally { active--; pump(); }
+}
+function recordSectionPhoto(url: string, result: Result) {
+  record(url, result);
+  for (const entry of entries.values()) if (photoKey(entry.url) === photoKey(url)) { queue.delete(entry); entry.done = true; entry.result = result; render(entry); }
+  position();
+}
 const selector = 'li[data-id] img, .img-protect-holder img, .gamma-single-view > img, .pswp img, .fancybox-image';
 function source(image: HTMLImageElement): string | undefined {
   try { const url = new URL(image.currentSrc || image.src, location.href); return url.hostname === 'images.pixieset.com' && url.protocol === 'https:' && /\.jpe?g$/i.test(url.pathname) ? url.href : undefined; } catch { return; }
@@ -31,9 +51,11 @@ function attach(image: HTMLImageElement, url: string): Entry {
 }
 function syncScope() {
   if (scope === location.pathname) return;
+  sectionScan.reset();
   scope = location.pathname; generation++; results.clear(); queue.clear(); observer.disconnect();
   for (const entry of entries.values()) entry.host.remove();
   entries.clear();
+  updatePanel();
 }
 function scan() {
   syncScope();
@@ -62,11 +84,12 @@ function position() {
 async function readEntry(url: string): Promise<Result> {
   // Await inside an async function also catches synchronous throws after extension Reload.
   const cached = results.get(photoKey(url));
-  if (cached?.status === 'ok') return cached;
+  if (cached && cached.status !== 'error') return cached;
   return await chrome.runtime.sendMessage({ type: 'read', url });
 }
 function stop() {
   setEnabled(false);
+  panel.destroy();
   mutations.disconnect();
   document.removeEventListener('pointermove', movePointer);
   document.removeEventListener('pointerout', leavePointer);
@@ -95,6 +118,7 @@ function record(url: string, result: Result) {
     result = { status: 'ok', data: { ...previous.data, ...Object.fromEntries(Object.entries(result.data).filter(([, value]) => value !== undefined)) } };
   }
   results.set(key, result);
+  updatePanel();
 }
 function render(entry: Entry) {
   const result = entry.result;
@@ -120,26 +144,30 @@ function applySettings(input: Record<string, unknown>) {
   for (const entry of entries.values()) render(entry);
   position();
 }
+function updatePanel() { panel.update({ ...summarize(results), detected: 0, title: document.title, enabled, section: sectionScan.state, sectionSupported: Boolean(sectionConfig(document, location.href)) }); }
 function getSummary(): Summary {
   syncScope();
   const detected = new Set([...document.querySelectorAll<HTMLImageElement>(selector)].map(source).filter((url): url is string => Boolean(url)).map(photoKey)).size;
-  return { ...summarize(results), detected, title: document.title, enabled };
+  return { ...summarize(results), detected, title: document.title, enabled, section: sectionScan.state, sectionSupported: Boolean(sectionConfig(document, location.href)) };
 }
 function movePointer(event: PointerEvent) { pointer = { x: event.clientX, y: event.clientY }; if (enabled && display.mode === 'hover') position(); }
 function leavePointer(event: PointerEvent) { if (event.relatedTarget === null) { pointer = { x: -1, y: -1 }; if (enabled && display.mode === 'hover') position(); } }
 document.addEventListener('pointermove', movePointer, { passive: true });
 document.addEventListener('pointerout', leavePointer, { passive: true });
 chrome.runtime.onMessage.addListener((message: unknown, sender, respond) => {
+  if (sender.id === chrome.runtime.id && message && typeof message === 'object' && 'type' in message && message.type === 'section') { toggleSection(); respond(getSummary()); return; }
+  if (sender.id === chrome.runtime.id && message && typeof message === 'object' && 'type' in message && message.type === 'panel') { respond({ visible: enabled ? panel.toggle() : false, enabled }); return; }
   if (sender.id === chrome.runtime.id && message && typeof message === 'object' && 'type' in message && message.type === 'summary') respond(getSummary());
 });
 function setEnabled(value: boolean) {
   enabled = value; generation++;
-  if (!value) { queue.clear(); observer.disconnect(); for (const entry of entries.values()) entry.host.remove(); entries.clear(); }
+  if (!value) { sectionScan.stop(); queue.clear(); observer.disconnect(); for (const entry of entries.values()) entry.host.remove(); entries.clear(); }
   else scan();
+  updatePanel();
 }
 let scheduled = false;
 function schedule() { if (scheduled || !enabled) return; scheduled = true; requestAnimationFrame(() => { scheduled = false; scan(); }); }
-const mutations = new MutationObserver(changes => { if (enabled && changes.some(change => change.type === 'attributes' ? !(change.target instanceof HTMLElement && change.target.tagName === 'PIXIESET-EXIF-LABEL') : [...change.addedNodes, ...change.removedNodes].some(node => node instanceof HTMLElement && node.tagName !== 'PIXIESET-EXIF-LABEL'))) schedule(); });
+const mutations = new MutationObserver(changes => { if (enabled && changes.some(change => change.type === 'attributes' ? !(change.target instanceof HTMLElement && ['PIXIESET-EXIF-LABEL', 'PIXIESET-EXIF-PANEL'].includes(change.target.tagName)) : [...change.addedNodes, ...change.removedNodes].some(node => node instanceof HTMLElement && !['PIXIESET-EXIF-LABEL', 'PIXIESET-EXIF-PANEL'].includes(node.tagName)))) schedule(); });
 mutations.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['src', 'srcset', 'style', 'class'] });
 document.addEventListener('load', schedule, true);
 document.addEventListener('scroll', schedule, { passive: true, capture: true });
