@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Pixieset EXIF",
+  "version": "0.1.0",
+  "description": "Ohnisko, ISO, čas, clona, blesk a fotoaparát priamo pri fotkách v Pixieset galériách.",
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://images.pixieset.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Pixieset EXIF",
+    "default_icon": {
+      "16": "icons/16.png",
+      "48": "icons/48.png",
+      "128": "icons/128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.pixieset.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/16.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  }
+}

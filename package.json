@@ -1,0 +1,24 @@
+{
+  "name": "pixieset-exif",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit && node build.mjs",
+    "test": "vitest run",
+    "check": "npm run build && npm test"
+  },
+  "dependencies": {
+    "exifr": "7.1.3"
+  },
+  "devDependencies": {
+    "@types/chrome": "0.1.24",
+    "esbuild": "0.25.12",
+    "jsdom": "26.1.0",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
