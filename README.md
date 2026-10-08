@@ -4,6 +4,8 @@ Malé rozšírenie pre Arc a Chrome, ktoré pri fotkách v Pixieset galériách 
 
 ## Ako to vyzerá
 
+**Fotografie v náhľadoch: [Fotografko](https://fotografko11.pixieset.com/).** Zdroj: galéria [Lívia – Adrián · Svadobná zábava](https://fotografko11.pixieset.com/lvia-adrin/svadobnazabava/). Fotografie patria ich autorovi; licencia zdrojového kódu rozšírenia sa na ne nevzťahuje.
+
 Zbalený panel pri pravom okraji ukazuje počet skontrolovaných fotiek, počet rôznych tiel a objektívov a podiel zaznamenaného blesku. Pri fotkách zostávajú pásiky s EXIF údajmi.
 
 ![Zbalený panel s piktogramami a EXIF pásikmi pri fotkách](docs/screenshots/panel-collapsed.png)
