@@ -14,8 +14,14 @@ export function flashLabel(value: number | undefined): string {
   const suffix = mode === 1 ? 'vynútený režim' : mode === 2 ? 'potlačený režim' : mode === 3 ? 'automatický režim' : '';
   return `Blesk: ${value & 1 ? 'áno' : 'nie'}${suffix ? ` · ${suffix}` : ''}${value & 64 ? ' · redukcia červených očí' : ''}`;
 }
+export function compactFlash(value: number | undefined): string {
+  if (value === undefined) return 'Blesk: ?';
+  if (value & 32) return '';
+  if (!(value & 1)) return '';
+  return '⚡️';
+}
 export function exposureLabel(value: number): string { return value < 1 ? `1/${Math.round(1 / value)} s` : `${Number(value.toFixed(2))} s`; }
-export function lines(data: Metadata): string[] {
-  const settings = [data.focal && `${Number(data.focal.toFixed(1))} mm`, data.aperture && `f/${Number(data.aperture.toFixed(1))}`, data.exposure && exposureLabel(data.exposure), data.iso && `ISO ${data.iso}`].filter(Boolean).join(' · ');
-  return [settings, data.camera, flashLabel(data.flash)].filter((value): value is string => Boolean(value));
+export function lines(data: Metadata, showFlash = true): string[] {
+  const settings = [data.focal && `${Number(data.focal.toFixed(1))} mm`, data.aperture && `f/${Number(data.aperture.toFixed(1))}`, data.exposure && exposureLabel(data.exposure), data.iso && `ISO ${data.iso}`, showFlash && compactFlash(data.flash)].filter(Boolean).join(' · ');
+  return [settings, data.camera].filter((value): value is string => Boolean(value));
 }

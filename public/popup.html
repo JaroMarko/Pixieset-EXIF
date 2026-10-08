@@ -1,7 +1,19 @@
-<!doctype html>
-<html lang="sk"><head><meta charset="utf-8"><title>Pixieset EXIF</title><link rel="stylesheet" href="popup.css"></head>
-<body><h1>Pixieset EXIF</h1><p>Nastavenia fotoaparátu priamo pri fotkách.</p>
-<label><input id="enabled" type="checkbox"> Zobrazovať EXIF v Pixiesete</label>
-<p id="status" role="status">Načítavam nastavenie…</p>
-<small>Zapnutie platí pre všetky Pixieset galérie. Údaje zostávajú v prehliadači. Výkon blesku táto verzia nečíta.</small>
-<script src="popup.js"></script></body></html>
+<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pixieset EXIF</title><link rel="stylesheet" href="popup.css"></head><body>
+<header><img src="icons/48.png" alt="" width="32" height="32"><div><h1>Pixieset EXIF</h1><span class="version">0.2.0 · fotografické údaje</span></div></header>
+<main>
+<section aria-labelledby="gallery"><h2 id="gallery">Prehľad galérie</h2><p class="muted" id="scope">Načítavam prehľad…</p>
+<div id="summary" hidden>
+<div class="metrics"><div><strong id="checked">0</strong><span>Skontrolované</span></div><div><strong id="available">0</strong><span>S EXIF</span></div><div><strong id="missing">0</strong><span>Bez údajov</span></div><div><strong id="errors">0</strong><span>Chyby</span></div></div>
+<p class="hint" id="detected"></p>
+<h3>Fotoaparáty</h3><div class="groups" id="cameras"></div><h3>Objektívy</h3><div class="groups" id="lenses"></div><h3>Použité clony</h3><div class="groups" id="apertures"></div>
+<div class="facts"><div><b id="iso"></b><p class="hint" id="iso-note"></p></div><div><b id="flash"></b><p class="hint" id="flash-note"></p></div></div>
+</div></section>
+<section id="controls" aria-label="Nastavenia zobrazenia"><label class="switch"><span>Zobrazovať údaje</span><input id="enabled" type="checkbox"></label><p class="hint" id="status" role="status">Načítavam nastavenia…</p>
+<details><summary>Prispôsobiť pásik</summary>
+<label class="setting">Zobrazenie<select id="mode"><option value="always">Stále pri fotkách</option><option value="hover">Pri prejdení myšou</option></select></label>
+<label class="setting" for="font">Veľkosť písma<output id="font-value">12 px</output></label><input id="font" type="range" min="10" max="16" step="1">
+<label class="setting" for="opacity">Krytie pozadia<output id="opacity-value">84 %</output></label><input id="opacity" type="range" min="35" max="95" step="1">
+<fieldset><legend>Zobrazené údaje</legend><div id="fields"></div></fieldset>
+<button id="reset" type="button">Obnoviť vzhľad</button></details></section>
+<footer>Údaje zostávajú v prehliadači. Prehľad sa po obnovení galérie začne odznova.</footer>
+</main><script src="popup.js"></script></body></html>
